@@ -1,0 +1,16 @@
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+
+if __name__ == '__main__':
+    dataset = pd.read_csv('ind_data_processed logs_9.1.2021.csv', index_col = 0)
+    y = dataset['PricePerSF']
+    
+    X_columns = ['BuildingSF','SalePrice', 'CeilingHeightDecimals', 'DistancetoNearestInterchange', 'StarRating', 'MSA']+[c for c in dataset.columns if 'BuildingClass' in c]+ [c for c in dataset.columns if ('LocationType_') in c] + [c for c in dataset.columns if ('SaleStatus_') in c]+[c for c in dataset.columns if 'quarter_' in c]+[c for c in dataset.columns if 'NumberOfFloors_' in c]#+[c for c in dataset.columns if 'SecondaryType_' in c]
+   
+    X = dataset[X_columns]
+
+    model = sm.OLS(y, X)
+    results = model.fit()
+    print(results.summary())
+    results.save("IND_EASTsingle_modelFINAL9.1.2021.pkl")
