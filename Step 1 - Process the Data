@@ -1,0 +1,21 @@
+import numpy as np
+import pandas as pd
+import datetime
+
+if __name__ == '__main__':
+    ind_data = pd.read_csv('INDUSTRIAL - US EAST 8.25.2021.csv', index_col = 0)
+    ind_data=(ind_data.dropna())
+    ind_data.drop(['StarRating', 'LandAreaAC', 'PropertyZipCode', 'LocationType', 'year', 'NearestMajorHighwayInterchange'], axis=1)
+    print (ind_data.info(), '\n')
+    print (ind_data.describe, '\n')
+    
+    ind_data['log_distance'] = np.log(ind_data['DistancetoNearestInterchange'].astype(float))
+    
+ind_data = pd.get_dummies(ind_data, columns = ['BuildingClass', 'SaleStatus', 'LocationType', 'NumberOfFloors', 'quarter'], drop_first = True)
+
+target_columns = ['PricePerSF', 'DistancetoNearestInterchange', 'CeilingHeightDecimals'] + [c for c in ind_data.columns if c.startswith('BuildingClass_') 
+    or c.startswith('NumberOfFloors_') or c.startswith('StarRating_') or c.startswith('quarter_')]
+print(target_columns)
+    
+ind_data.to_csv('ind_data_processed logs_9.1.2021.csv')
+print("Data saved to ind_data_processed logs_9.1.2021.csv")    
