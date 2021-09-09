@@ -1,0 +1,17 @@
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+
+df = pd.read_csv('INDUSTRIAL - US EAST 8.25.2021.csv', index_col = 0)
+
+print(df.info(), '\n')
+print (df.StarRating.value_counts(), '\n')
+print (df.BuildingClass.value_counts(), '\n')
+print (df.SecondaryType.value_counts(), '\n')
+print (df.NumberOfFloors.value_counts(), '\n')
+print (df.MSA.value_counts(), '\n')
+
+DFCount=pd.DataFrame(df.melt(var_name='column', value_name='value').value_counts()).rename(columns={0: 'counts'}).sort_values(by=['column', 'counts'])
+pd.set_option("display.max_rows", None)
+print(DFCount.to_csv('Column_value_counts.csv'))
+print("Data saved to Column_value_counts.csv")
