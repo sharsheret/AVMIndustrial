@@ -1,0 +1,71 @@
+import pandas as pd
+import numpy as np
+from statsmodels.regression.linear_model import OLSResults
+
+if __name__ == '__main__':
+    results = OLSResults.load("IND_EASTsingle_modelFINAL9.1.2021.pkl")   #Loads pkl file with regression results - saves model fit
+    print(results.summary())                     
+             #Plug in property info to predict price. This model inputs this specific property data into the equation
+                                
+    X_new_dict = { 
+        'const': 1,
+        'SalePrice': 0,
+        'BuildingSF': 75250,                          #Enter area of subject property in SF 
+        'StarRating':3,                               #Enter subject star rating
+        'CeilingHeightDecimals': 25,                  #Enter subject property ceiling height
+        'DistancetoNearestInterchange': 5,            #Enter distance between subject property and nearest major highway interchange
+        'MSA': 35620,                                 #Enter federal code for subject property's MSA
+        'SaleStatus_Sold':1,                          #Enter 1 if property has been sold, 0 if Under Contract
+        'SaleStatus_Under Contract':0,                #Enter 0 if Under Contract, 0 if Sold 
+        'LocationType_Suburban': 0,                   #Enter 1 next to LocationType_Suburban, _Urban or _CBD according to subject property location and enter 0 next to the others
+        'LocationType_Urban': 1,
+        'LocationType_CBD': 0,
+        'BuildingClass_A': 0,                         #Enter 1 next to BusinessClass_A, _b or _C according to subject building class and enter 0 next to the others
+        'BuildingClass_B': 0,
+        'BuildingClass_C': 1,
+        'quarter_2019Q1': 0,                          #Enter 1 next to the quarter in which the subject property sale took place and enter 0 next to the others
+        'quarter_2019Q2': 0,
+        'quarter_2019Q3': 0,
+        'quarter_2019Q4': 0,
+        'quarter_2020Q1': 0,
+        'quarter_2020Q2': 0,
+        'quarter_2020Q3': 0,
+        'quarter_2020Q4': 0,
+        'quarter_2021Q1': 0,
+        'quarter_2021Q2': 1,    
+        'NumberOfFloors_1': 1,                        #Enter 1 next to the number of floors the subject property has and enter 0 next to the others
+        'NumberOfFloors_2': 0,
+        'NumberOfFloors_3': 0,
+        'NumberOfFloors_4': 0,
+        'NumberOfFloors_5': 0,
+        'NumberOfFloors_6': 0,
+        'NumberOfFloors_7': 0,
+        'NumberOfFloors_8': 0,
+        'NumberOfFloors_13': 0,
+    }
+    
+    print("------------------X_new_dict")
+    print(X_new_dict)
+    print("------------------")
+#Converts dictionary above into a panda series - make sure it's the same index as your parameters
+    X_df = pd.Series(X_new_dict, index = results.params.index).to_frame().transpose()
+    print("------------------PrintX_df")
+    prediction = results.get_prediction(X_df).summary_frame(alpha = 0.8) 
+    lower_psf = prediction['obs_ci_lower']
+    mean_psf = prediction['mean']
+    upper_psf = prediction['obs_ci_upper']
+
+    lower_psf = float((lower_psf))
+    mean_psf = float((mean_psf))
+    upper_psf = float((upper_psf))
+
+    lower_dollars = lower_psf * 75250                #Enter subject property area in SF
+    mean_dollars = mean_psf * 75250                  #Enter subject property area in SF
+    upper_dollars = upper_psf * 75250                #Enter subject property area in SF
+
+    result_psf = float(results.predict(X_df))
+    result_psf = np.exp(result_psf)
+    result_dollars = result_psf * 75250              #Enter subject property area in SF
+    
+    print("Valuation of specified property is $%s ($%s psf), with a prediction range of $%s to $%s" % ("{:,.0f}".format(mean_dollars),
+     "{:,.0f}".format(mean_psf),"{:,.0f}".format(lower_dollars),"{:,.0f}".format(upper_dollars)))    
